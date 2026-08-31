@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: Run FastAPI",
+      "type": "shell",
+      "command": "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+      "options": { "cwd": "${workspaceFolder:Backend}" },
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    },
+    {
+      "label": "Backend: Run Simulator",
+      "type": "shell",
+      "command": "python scripts/simulate_terminal.py",
+      "options": { "cwd": "${workspaceFolder:Backend}" },
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    },
+    {
+      "label": "Firmware: Build",
+      "type": "shell",
+      "command": "pio run",
+      "options": { "cwd": "${workspaceFolder:Firmware (PlatformIO)}" },
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    },
+    {
+      "label": "Firmware: Upload",
+      "type": "shell",
+      "command": "pio run --target upload",
+      "options": { "cwd": "${workspaceFolder:Firmware (PlatformIO)}" },
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    },
+    {
+      "label": "Firmware: Serial Monitor",
+      "type": "shell",
+      "command": "pio device monitor --baud 115200",
+      "options": { "cwd": "${workspaceFolder:Firmware (PlatformIO)}" },
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated", "reveal": "always" }
+    }
+  ]
+}

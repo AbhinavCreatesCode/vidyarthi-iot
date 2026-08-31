@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vidyarthi-IoT — School Dashboard</title>
+  <style>
+    /* ============================================================
+     TOKENS — chalkboard-and-slate palette, system fonts only.
+     No web-font loading: rural school Wi-Fi/2G links stay fast.
+  ============================================================ */
+    :root {
+      --bg: #F5F3ED;
+      /* chalk-dust paper       */
+      --surface: #FFFFFF;
+      --surface-2: #EFEDE4;
+      --ink: #1F2A24;
+      /* blackboard ink         */
+      --ink-soft: #55605A;
+      --line: #DDD9CC;
+      --accent: #2B6F5C;
+      /* slate/chalkboard green */
+      --accent-ink: #E8F1EC;
+      --warm: #C77D28;
+      /* turmeric — food/alerts */
+      --warm-ink: #FBEEDD;
+      --danger: #B8412F;
+      /* terracotta-red         */
+      --danger-ink: #F8E7E2;
+      --ok: #3F8F5C;
+      --ok-ink: #E7F3EB;
+      --radius: 10px;
+      --shadow: 0 1px 2px rgba(31, 42, 36, .06), 0 4px 14px rgba(31, 42, 36, .05);
+      --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", sans-serif;
+      --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-ui);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    :focus-visible {
+      outline: 2.5px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important;
+      }
+    }
+
+    /* ---------------- App shell ---------------- */
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ---------------- Sidebar ---------------- */
+    .sidebar {
+      width: 232px;
+      flex: 0 0 auto;
+      background: var(--ink);
+      color: #EDEFEA;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      padding: 20px 18px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      flex: 0 0 auto;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .brand-name {
+      font-size: 15.5px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #B7BEB6;
+      letter-spacing: .02em;
+    }
+
+    .nav {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1 1 auto;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #CBD1C7;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #5E685F;
+      flex: 0 0 auto;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, .06);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .nav-item.active .dot {
+      background: #fff;
+    }
+
+    .nav-group-label {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #7C857D;
+      padding: 14px 10px 4px;
+    }
+
+    .sidebar-foot {
+      padding: 12px;
+      border-top: 1px solid rgba(255, 255, 255, .08);
+      font-size: 11px;
+      color: #8C948B;
+    }
+
+    /* ---------------- Main ---------------- */
+    .main {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 22px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .hamburger {
+      display: none;
+    }
+
+    .page-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .page-sub {
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .clock {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      min-width: 64px;
+      text-align: right;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--surface-2);
+      color: var(--ink-soft);
+      border: 1px solid var(--line);
+    }
+
+    .pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .pill.ok {
+      background: var(--ok-ink);
+      color: #1F5A38;
+      border-color: transparent;
+    }
+
+    .pill.ok .dot {
+      background: var(--ok);
+      box-shadow: 0 0 0 3px rgba(63, 143, 92, .18);
+    }
+
+    .pill.off {
+      background: var(--danger-ink);
+      color: #7A2E1F;
+      border-color: transparent;
+    }
+
+    .pill.off .dot {
+      background: var(--danger);
+    }
+
+    .pill.demo {
+      background: var(--warm-ink);
+      color: #7A4B10;
+      border-color: transparent;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .btn:hover {
+      background: var(--surface-2);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      filter: brightness(1.06);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--ink-soft);
+    }
+
+    .btn.small {
+      padding: 5px 9px;
+      font-size: 11.5px;
+    }
+
+    .content {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+      max-width: 1180px;
+    }
+
+    .module {
+      scroll-margin-top: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .module-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .module-head h2 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .module-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .module-desc {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      max-width: 60ch;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .card.accent-left {
+      border-left: 3px solid var(--accent);
+    }
+
+    .card.warm-left {
+      border-left: 3px solid var(--warm);
+    }
+
+    .card.danger-left {
+      border-left: 3px solid var(--danger);
+    }
+
+    .stat-card .stat-label {
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .stat-card .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-card .stat-note {
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      margin-top: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    th {
+      text-align: left;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--ink-soft);
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+    }
+
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent-ink);
+      color: var(--accent);
+      display: inline-grid;
+      place-items: center;
+      font-size: 10.5px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .name-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    .badge.ok {
+      background: var(--ok-ink);
+      color: #1F5A38;
+    }
+
+    .badge.warn {
+      background: var(--warm-ink);
+      color: #7A4B10;
+    }
+
+    .badge.bad {
+      background: var(--danger-ink);
+      color: #7A2E1F;
+    }
+
+    .badge.muted {
+      background: var(--surface-2);
+      color: var(--ink-soft);
+    }
+
+    .feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .feed-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 4px;
+      border-bottom: 1px solid var(--line);
+      font-size: 12.5px;
+    }
+
+    .feed-row:last-child {
+      border-bottom: none;
+    }
+
+    .feed-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-soft);
+      width: 60px;
+      flex: 0 0 auto;
+    }
+
+    .feed-meta {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .feed-meta .roll {
+      color: var(--ink-soft);
+      font-size: 11px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 9px;
+    }
+
+    .bar-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .bar-label {
+      width: 20px;
+      font-weight: 700;
+      font-size: 12.5px;
+      flex: 0 0 auto;
+    }
+
+    .bar-track {
+      flex: 1 1 auto;
+      height: 16px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: var(--accent);
+      transition: width .5s ease;
+    }
+
+    .bar-pct {
+      width: 38px;
+      text-align: right;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-soft);
+      flex: 0 0 auto;
+    }
+
+    .alert-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      background: var(--danger-ink);
+      color: #7A2E1F;
+      font-size: 12.5px;
+      border: 1px solid rgba(184, 65, 47, .25);
+    }
+
+    .alert-banner strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .alert-banner.hidden {
+      display: none;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+    }
+
+    .signal-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 14px;
+    }
+
+    .signal-bars i {
+      width: 3px;
+      background: var(--line);
+      border-radius: 1px;
+      display: block;
+    }
+
+    .signal-bars i:nth-child(1) {
+      height: 5px;
+    }
+
+    .signal-bars i:nth-child(2) {
+      height: 8px;
+    }
+
+    .signal-bars i:nth-child(3) {
+      height: 11px;
+    }
+
+    .signal-bars i:nth-child(4) {
+      height: 14px;
+    }
+
+    .signal-bars.s4 i {
+      background: var(--ok);
+    }
+
+    .signal-bars.s3 i:nth-child(-n+3) {
+      background: var(--ok);
+    }
+
+    .signal-bars.s2 i:nth-child(-n+2) {
+      background: var(--warm);
+    }
+
+    .signal-bars.s1 i:nth-child(1) {
+      background: var(--danger);
+    }
+
+    .kv {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .kv:last-child {
+      border-bottom: none;
+    }
+
+    .kv .k {
+      color: var(--ink-soft);
+    }
+
+    .kv .v {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      padding: 18px 6px;
+      text-align: center;
+    }
+
+    /* Toasts */
+    .toast-stack {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: min(320px, 90vw);
+    }
+
+    .toast {
+      background: var(--ink);
+      color: #fff;
+      border-radius: 9px;
+      padding: 11px 13px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12.5px;
+      animation: toast-in .25s ease-out;
+    }
+
+    .toast .toast-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+      flex: 0 0 auto;
+    }
+
+    .toast.bad .toast-dot {
+      background: var(--danger);
+    }
+
+    .toast b {
+      display: block;
+      font-size: 13px;
+    }
+
+    @keyframes toast-in {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .settings-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 42, 36, .35);
+      z-index: 90;
+      display: none;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+
+    .settings-panel.open {
+      display: flex;
+    }
+
+    .settings-sheet {
+      width: min(360px, 92vw);
+      height: 100%;
+      background: var(--surface);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: -6px 0 24px rgba(0, 0, 0, .15);
+    }
+
+    .settings-sheet h3 {
+      font-size: 15px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .helptext {
+      font-size: 11px;
+      color: var(--ink-soft);
+    }
+
+    .footer-credit {
+      padding: 18px 22px 30px;
+      font-size: 11px;
+      color: var(--ink-soft);
+    }
+
+    /* ---------------- Responsive ---------------- */
+    @media (max-width: 860px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        transition: transform .2s ease;
+        z-index: 80;
+        box-shadow: 8px 0 20px rgba(0, 0, 0, .2);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .hamburger {
+        display: inline-flex;
+      }
+
+      .content {
+        padding: 16px;
+        gap: 26px;
+      }
+
+      .topbar {
+        padding: 10px 14px;
+      }
+
+      .clock {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stat-card .stat-value {
+        font-size: 23px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- ============= SIDEBAR ============= -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">VI</div>
+        <div>
+          <div class="brand-name">Vidyarthi-IoT</div>
+          <div class="brand-sub">School terminal dashboard</div>
+        </div>
+      </div>
+      <nav class="nav" id="navList">
+        <div class="nav-group-label">Live modules</div>
+        <a class="nav-item active" href="#attendance" data-target="attendance"><span class="dot"></span> Attendance
+          &amp; Taps</a>
+        <a class="nav-item" href="#poshan" data-target="poshan"><span class="dot"></span> Ration &amp; Feedback</a>
+        <a class="nav-item" href="#dropout" data-target="dropout"><span class="dot"></span> Dropout Early Warning</a>
+        <a class="nav-item" href="#sync" data-target="sync"><span class="dot"></span> Offline Sync &amp; SMS</a>
+        <div class="nav-group-label">Setup</div>
+        <a class="nav-item" href="#admin" data-target="admin"><span class="dot"></span> Student Roster</a>
+      </nav>
+      <div class="sidebar-foot">ESP32 + RC522 · raw WebSocket<br>FastAPI backend</div>
+    </aside>
+
+    <!-- ============= MAIN ============= -->
+    <div class="main">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn ghost hamburger" id="hamburgerBtn" aria-label="Open menu">☰</button>
+          <div>
+            <div class="page-title">Today · Government School Dashboard</div>
+            <div class="page-sub" id="dateLabel">—</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <span class="clock" id="clock">--:--:--</span>
+          <span class="pill demo" id="modePill"><span class="dot" style="background:var(--warm)"></span> Demo
+            data</span>
+          <span class="pill off" id="wsPill"><span class="dot"></span> Terminal offline</span>
+          <button class="btn small" id="settingsBtn">Connection</button>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <!-- ============= 1. ATTENDANCE ============= -->
+        <section class="module" id="attendance">
+          <div class="module-head">
+            <div>
+              <div class="module-eyebrow">Core · SDG 4</div>
+              <h2>Live Telemetry &amp; Anti-Proxy Attendance</h2>
+            </div>
+          </div>
+          <p class="module-desc">Every RFID tap on the ESP32 + RC522 terminal appears here the instant it arrives over
+            WebSocket — no refresh needed.</p>
+
+          <div class="grid cols-2">
+            <div class="card">
+              <h3 style="font-size:13.5px;margin-bottom:10px;">Live tap feed</h3>
+              <div class="feed-list" id="tapFeed">
+                <div class="empty">Waiting for the first tap…</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size:13.5px;margin-bottom:10px;">Dual-point verification matrix</h3>
+              <p class="module-desc" style="margin-bottom:8px;">Morning roll call vs. afternoon exit tap — a mismatch
+                flags possible proxy marking.</p>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>AM tap</th>
+                      <th>PM tap</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="verifyBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============= 2. RATION & FEEDBACK ============= -->
+        <section class="module" id="poshan">
+          <div class="module-head">
+            <div>
+              <div class="module-eyebrow">Student Services</div>
+              <h2>Ration Distribution &amp; Session Feedback</h2>
+            </div>
+            <span class="pill" id="modeStatusPill"><span class="dot"></span> Terminal idle</span>
+          </div>
+          <p class="module-desc">The ESP32 first classifies the teacher's RFID card. Button 1 starts feedback mode;
+            Button 2 starts ration mode. Students then scan their cards and interact with the corresponding buttons.</p>
+
+          <div class="grid">
+            <div class="card stat-card accent-left">
+              <div class="stat-label">Students eligible</div>
+              <div class="stat-value" id="rationStudentCount">0</div>
+              <div class="stat-note">Role = student in the roster</div>
+            </div>
+            <div class="card stat-card accent-left">
+              <div class="stat-label">Rations collected</div>
+              <div class="stat-value" id="rationClaimedCount">0</div>
+              <div class="stat-note">One claim per student per day</div>
+            </div>
+            <div class="card stat-card warm-left">
+              <div class="stat-label">Rations not collected</div>
+              <div class="stat-value" id="rationNotClaimedCount">0</div>
+              <div class="stat-note">Roster minus today's claims</div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-label">Average feedback</div>
+              <div class="stat-value" id="feedbackAverage">—</div>
+              <div class="stat-note">1 = lowest · 4 = highest</div>
+            </div>
+          </div>
+
+          <div class="grid cols-2">
+            <div class="card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
+                <h3 style="font-size:13.5px;">Ration stock</h3>
+                <span class="badge muted" id="rationStockDate">Today</span>
+              </div>
+              <div class="kv"><span class="k">Initial food grains</span><span class="v" id="rationInitialGrain">0
+                  kg</span></div>
+              <div class="kv"><span class="k">Food grains remaining</span><span class="v" id="rationRemainingGrain">0
+                  kg</span></div>
+              <div class="kv"><span class="k">Initial pulses</span><span class="v" id="rationInitialPulse">0 kg</span>
+              </div>
+              <div class="kv"><span class="k">Pulses remaining</span><span class="v" id="rationRemainingPulse">0
+                  kg</span></div>
+              <form id="rationStockForm" class="form-grid" style="margin-top:12px;">
+                <div class="field">
+                  <label for="rationGrainInput">Set grain stock (kg)</label>
+                  <input id="rationGrainInput" type="number" min="0" step="0.001" required>
+                </div>
+                <div class="field">
+                  <label for="rationPulseInput">Set pulse stock (kg)</label>
+                  <input id="rationPulseInput" type="number" min="0" step="0.001" required>
+                </div>
+                <div class="field" style="grid-column:1/-1;">
+                  <button class="btn primary" type="submit">Save today's stock</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size:13.5px;margin-bottom:10px;">Students who have not collected</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Roll</th>
+                      <th>Student</th>
+                      <th>Class</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rationMissingBody">
+                    <tr>
+                      <td colspan="3" class="empty">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size:13.5px;margin-bottom:10px;">Session feedback</h3>
+              <div class="kv"><span class="k">Active teacher</span><span class="v" id="feedbackTeacher">—</span></div>
+              <div class="kv"><span class="k">Responses</span><span class="v" id="feedbackTotal">0</span></div>
+              <div id="feedbackBars" style="margin-top:10px;">
+                <div class="bar-row"><span class="bar-label">1</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:0%"></div>
+                  </div><span class="bar-pct" id="feedbackPct1">0%</span>
+                </div>
+                <div class="bar-row"><span class="bar-label">2</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:0%"></div>
+                  </div><span class="bar-pct" id="feedbackPct2">0%</span>
+                </div>
+                <div class="bar-row"><span class="bar-label">3</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:0%"></div>
+                  </div><span class="bar-pct" id="feedbackPct3">0%</span>
+                </div>
+                <div class="bar-row"><span class="bar-label">4</span>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:0%"></div>
+                  </div><span class="bar-pct" id="feedbackPct4">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size:13.5px;margin-bottom:10px;">How the terminal works</h3>
+              <div class="kv"><span class="k">Teacher card</span><span class="v">Required</span></div>
+              <div class="kv"><span class="k">Button 1</span><span class="v">Feedback mode</span></div>
+              <div class="kv"><span class="k">Button 2</span><span class="v">Ration mode</span></div>
+              <div class="kv"><span class="k">Feedback buttons</span><span class="v">1–4 rating</span></div>
+              <div class="kv"><span class="k">Ration</span><span class="v">RFID → deduct stock</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============= 3. DROPOUT / EQUITY ============= -->
+        <section class="module" id="dropout">
+          <div class="module-head">
+            <div>
+              <div class="module-eyebrow">SDG 5 &amp; 10</div>
+              <h2>Dropout Prevention &amp; Equity Early Warning</h2>
+            </div>
+          </div>
+          <p class="module-desc">Attendance history is scanned for predictable absence patterns — seasonal harvesting
+            waves (Rabi / Kharif) or recurring monthly cycles — well before a child stops coming altogether.</p>
+
+          <div class="grid cols-2">
+            <div class="card">
+              <div
+                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:8px;">
+                <h3 style="font-size:13.5px;">Students flagged</h3>
+                <button class="btn small" id="runScanBtn">Run scan now</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Pattern</th>
+                      <th>Missed (30d)</th>
+                      <th>Risk</th>
+                    </tr>
+                  </thead>
+                  <tbody id="riskBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size:13.5px;margin-bottom:10px;">Intervention log</h3>
+              <div class="feed-list" id="interventionFeed">
+                <div class="empty">No outreach logged yet.</div>
+              </div>
+              <div class="form-grid" style="margin-top:12px;">
+                <div class="field" style="grid-column:1/-1;">
+                  <label for="intStudent">Student</label>
+                  <select id="intStudent"></select>
+                </div>
+                <div class="field" style="grid-column:1/-1;">
+                  <label for="intNote">Action taken</label>
+                  <input id="intNote" type="text" placeholder="e.g. Home visit by SMC member">
+                </div>
+              </div>
+              <button class="btn primary small" id="logInterventionBtn" style="margin-top:10px;">Log
+                intervention</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============= 4. SYNC & SMS ============= -->
+        <section class="module" id="sync">
+          <div class="module-head">
+            <div>
+              <div class="module-eyebrow">SDG 9 &amp; 10</div>
+              <h2>Rural Offline Sync &amp; Communication</h2>
+            </div>
+          </div>
+          <p class="module-desc">The terminal buffers taps when connectivity drops and syncs the queue once Wi-Fi
+            returns. One consolidated message goes home per household at 7:30 PM.</p>
+
+          <div class="grid">
+            <div class="card">
+              <div class="stat-label">Terminal link</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+                <span class="signal-bars s3" id="signalBars"><i></i><i></i><i></i><i></i></span>
+                <span class="stat-value" style="font-size:16px;" id="signalLabel">—</span>
+              </div>
+              <div class="stat-note" id="signalRssi">RSSI: —</div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-label">Sync queue</div>
+              <div class="stat-value" id="queueCount">0</div>
+              <div class="stat-note">Taps buffered offline, pending upload</div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-label">Next SMS batch</div>
+              <div class="stat-value" id="smsCountdown">—</div>
+              <div class="stat-note">7:30 PM consolidated dispatch</div>
+            </div>
+            <div class="card stat-card">
+              <div class="stat-label">Households queued</div>
+              <div class="stat-value" id="smsQueued">0</div>
+              <div class="stat-note">One SMS per primary household number</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
+              <h3 style="font-size:13.5px;">Delivery log</h3>
+              <button class="btn primary small" id="sendBatchBtn">Send batch now</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Phone</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="smsLogBody">
+                  <tr>
+                    <td colspan="4" class="empty">No messages sent yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============= 5. ADMIN ============= -->
+        <section class="module" id="admin">
+          <div class="module-head">
+            <div>
+              <div class="module-eyebrow">Setup</div>
+              <h2>Student Roster</h2>
+            </div>
+          </div>
+          <p class="module-desc">Add or edit students. The roster is stored directly in PostgreSQL and is used by the FastAPI backend for RFID, attendance, feedback, and ration features.</p>
+
+          <div class="card">
+            <form id="rosterForm" class="form-grid">
+              <div class="field"><label for="fName">Name</label><input id="fName" required placeholder="Student name">
+              </div>
+              <div class="field"><label for="fRoll">Roll no.</label><input id="fRoll" required placeholder="e.g. 24">
+              </div>
+              <div class="field"><label for="fClass">Class</label><input id="fClass" required placeholder="e.g. 6-B">
+              </div>
+              <div class="field"><label for="fUid">RFID card UID</label><input id="fUid" required
+                  placeholder="e.g. 04:A3:9F:1C" style="font-family:var(--font-mono);"></div>
+              <div class="field"><label for="fPhone">Guardian phone</label><input id="fPhone" type="tel"
+                  placeholder="10-digit mobile"></div>
+              <div class="field"><label for="fRole">Card role</label><select id="fRole">
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                </select></div>
+              <div class="field" style="align-self:end;">
+                <button class="btn primary" type="submit" style="width:100%;">Add to roster</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div style="margin-bottom:10px;">
+              <h3 style="font-size:13.5px; margin-bottom:4px;">Search Students</h3>
+              <div class="helptext">Search the PostgreSQL database by student name, roll number, class, or RFID UID.</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <input id="rosterSearch" type="search" placeholder="Search name, roll, class or RFID..." autocomplete="off"
+                style="flex:1; min-width:260px;">
+              <button class="btn ghost small" type="button" id="rosterSearchClear">Clear</button>
+            </div>
+            <div id="rosterSearchStatus" class="helptext" style="margin-top:8px;">Showing the PostgreSQL roster.</div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+              <h3 style="font-size:13.5px;">Roster (<span id="rosterCount">0</span>)</h3>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Roll</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>RFID UID</th>
+                    <th>Role</th>
+                    <th>Guardian phone</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="rosterBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <div class="footer-credit">Vidyarthi-IoT dashboard UI · connects over a raw WebSocket to the FastAPI relay ·
+          designed for low-bandwidth rural links (system fonts, no external assets).</div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-stack" id="toastStack"></div>
+
+  <!-- Connection settings panel -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-sheet">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3>Connection</h3>
+        <button class="btn ghost small" id="closeSettingsBtn">Close</button>
+      </div>
+
+      <div class="field">
+        <label for="apiUrlInput">Backend API URL</label>
+        <input id="apiUrlInput" type="text" placeholder="http://localhost:8000">
+        <span class="helptext">Base URL of the FastAPI backend — used for roster, ration, feedback, dropout and SMS REST
+          calls.</span>
+      </div>
+
+      <div class="field">
+        <label for="wsUrlInput">WebSocket URL</label>
+        <input id="wsUrlInput" type="text" placeholder="ws://localhost:8000/ws/dashboard">
+        <span class="helptext">The backend's <code>/ws/dashboard</code> endpoint, broadcasting tap, feedback, ration,
+          mode, hardware and risk events live.</span>
+      </div>
+
+      <div class="field">
+        <label for="adminKeyInput">Admin API key <span
+            style="text-transform:none;font-weight:500;">(optional)</span></label>
+        <input id="adminKeyInput" type="password" placeholder="Only needed if ADMIN_API_KEY is set">
+        <span class="helptext">Sent as <code>Authorization: Bearer …</code> on roster writes, ration-stock updates, and
+          manual scan/SMS-batch triggers. Leave blank for local dev (open backend).</span>
+      </div>
+
+      <button class="btn primary" id="connectBtn">Connect</button>
+      <button class="btn" id="disconnectBtn">Disconnect</button>
+
+      <hr style="border:none;border-top:1px solid var(--line); margin:6px 0;">
+
+      <div class="field">
+        <label
+          style="display:flex;align-items:center;gap:8px;font-weight:600; text-transform:none; font-size:12.5px; color:var(--ink);">
+          <input type="checkbox" id="demoToggle" style="width:auto;">
+          Run on simulated demo data
+        </label>
+        <span class="helptext">On by default so the dashboard is fully explorable before a terminal is wired up. Turn
+          off (or hit Connect) once the real backend is live.</span>
+      </div>
+
+      <div class="field">
+        <label>Expected message shape</label>
+        <span class="helptext"
+          style="font-family:var(--font-mono); background:var(--surface-2); padding:8px; border-radius:6px; display:block; white-space:pre-wrap;">{"type":"tap_event"|"feedback_update"|"ration_update"|"mode_event"|"hardware_status"|"risk_alert",
+          "data":{…}}</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      /* ===================== State ===================== */
+      var state = {
+        ws: null,
+        demoMode: true,
+        demoTimer: null,
+        apiBase: "",           // set on init from the Connection panel / page origin
+        adminKey: "",
+        backendLive: false,    // true once we've successfully talked to the REST API
+        refreshTimer: null,
+        students: [
+          { roll: "12", name: "Anjali Verma", cls: "6-B", uid: "04:A3:9F:1C", phone: "9876543210" },
+          { roll: "14", name: "Rohit Kumar", cls: "6-B", uid: "04:B1:2E:88", phone: "9876543211" },
+          { roll: "21", name: "Sneha Yadav", cls: "7-A", uid: "04:C9:71:4D", phone: "9876543212" },
+          { roll: "05", name: "Imran Sheikh", cls: "5-C", uid: "04:D0:5A:2F", phone: "9876543213" },
+          { roll: "33", name: "Priya Nair", cls: "7-A", uid: "04:E4:11:9B", phone: "9876543214" }
+        ],
+        amTaps: {},
+        pmTaps: {},
+        proxyFlags: {},
+        tapFeed: [],
+        ration: {
+          studentCount: 0, claimedCount: 0, notClaimedCount: 0,
+          initialGrain: 0, initialPulse: 0, remainingGrain: 0, remainingPulse: 0, missing: []
+        },
+        feedback: { active: false, teacherName: "", total: 0, average: 0, ratings: { "1": 0, "2": 0, "3": 0, "4": 0 } },
+        terminalMode: { mode: "idle", teacherName: "" },
+        riskList: [
+          { name: "Rohit Kumar", pattern: "Missing every Monday for 4 weeks", missed: 6, risk: "high" },
+          { name: "Imran Sheikh", pattern: "Absent during Rabi harvest window", missed: 5, risk: "med" }
+        ],
+        interventions: [],
+        hardware: { rssi: -58, online: true, queue: 0 },
+        smsQueued: 0
+      };
+
+      /* ===================== Helpers ===================== */
+      function $(id) { return document.getElementById(id); }
+      function pad(n) { return n < 10 ? "0" + n : "" + n; }
+      function nowHM() { var d = new Date(); return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); }
+      function initials(name) {
+        return name.split(" ").map(function (p) { return p[0]; }).join("").slice(0, 2).toUpperCase();
+      }
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+      function tsToHM(iso) {
+        if (!iso) return "—";
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return String(iso).slice(11, 16) || "—";
+        return pad(d.getHours()) + ":" + pad(d.getMinutes());
+      }
+
+      /* ===================== Backend REST API ===================== */
+      // Every call is best-effort: if the backend isn't reachable yet (still on
+      // demo data, or not started), calls fail quietly and the UI just keeps
+      // showing whatever it already had -- no REST call is required for the
+      // dashboard to be explorable.
+      function apiUrl(path) {
+        return (state.apiBase || "").replace(/\/$/, "") + path;
+      }
+      function authHeaders(extra) {
+        var h = Object.assign({}, extra || {});
+        if (state.adminKey) h["Authorization"] = "Bearer " + state.adminKey;
+        return h;
+      }
+      function apiGet(path) {
+        return fetch(apiUrl(path), { headers: authHeaders() }).then(function (r) {
+          if (!r.ok) throw new Error(r.status + " " + path);
+          return r.json();
+        });
+      }
+      function apiSend(path, method, body) {
+        return fetch(apiUrl(path), {
+          method: method,
+          headers: authHeaders({ "Content-Type": "application/json" }),
+          body: body != null ? JSON.stringify(body) : undefined
+        }).then(function (r) {
+          if (!r.ok) {
+            return r.json().catch(function () { return {}; }).then(function (err) {
+              throw new Error(err.detail || (r.status + " " + path));
+            });
+          }
+          return r.status === 204 ? null : r.json();
+        });
+      }
+
+      /* Pull the full current backend state into the dashboard -- called once
+         right after connecting, and again on a periodic refresh timer, so
+         anything not delivered as a live WebSocket event (roster edits, SMS
+         log, interventions, etc.) still shows up without a manual reload. */
+      function loadAllFromBackend() {
+        if (!state.apiBase) return;
+
+        apiGet("/roster").then(function (rows) {
+          state.students = rows.map(function (r) {
+            return { roll: r.roll, name: r.name, cls: r["class"], uid: r.rfid_uid, phone: r.guardian_phone, role: r.role || "student" };
+          });
+          renderRoster();
+          renderVerifyMatrix();
+        }).catch(function () { });
+
+        apiGet("/attendance/recent?limit=40").then(function (rows) {
+          state.tapFeed = rows.map(function (r) {
+            return {
+              name: r.name,
+              roll: r.roll,
+              session: r.session,
+              verified: r.verified !== false,
+              already_marked: false,
+              proxy_suspected: false,
+              time: tsToHM(r.ts)
+            };
+          });
+          renderTapFeed();
+        }).catch(function (err) {
+          console.error("Attendance load failed:", err);
+        });
+
+        apiGet("/attendance/verification").then(function (rows) {
+          state.proxyFlags = {};
+          state.amTaps = {};
+          state.pmTaps = {};
+          rows.forEach(function (r) {
+            if (r.am) state.amTaps[r.roll] = tsToHM(r.am);
+            if (r.pm) state.pmTaps[r.roll] = tsToHM(r.pm);
+            if (r.proxy) {
+              state.proxyFlags[r.roll] = true;
+            }
+          });
+
+          state.tapFeed.forEach(function (t) {
+            if (state.proxyFlags[t.roll]) {
+              t.verified = false;
+              t.proxy_suspected = true;
+            }
+          });
+
+          renderVerifyMatrix();
+          renderTapFeed();
+        }).catch(function (err) {
+          console.error("Attendance verification load failed:", err);
+        });
+
+        refreshRation();
+        refreshFeedback();
+
+        apiGet("/dropout/flags").then(function (rows) {
+          state.riskList = rows;
+          renderRisk();
+        }).catch(function () { });
+
+        apiGet("/dropout/interventions").then(function (rows) {
+          state.interventions = rows.map(function (r) { return { student: r.student, note: r.note, time: tsToHM(r.ts) }; });
+          renderInterventionFeed();
+        }).catch(function () { });
+
+        refreshSms();
+
+        apiGet("/hardware/status").then(function (h) { onHardwareStatus(h); }).catch(function () { });
+      }
+
+      function refreshAttendance() {
+        apiGet("/attendance/recent?limit=40").then(function (rows) {
+          state.tapFeed = rows.map(function (r) {
+            return {
+              name: r.name,
+              roll: r.roll,
+              session: r.session,
+              verified: r.verified !== false,
+              already_marked: false,
+              proxy_suspected: false,
+              time: tsToHM(r.ts)
+            };
+          });
+
+          renderTapFeed();
+        }).catch(function () { });
+
+        apiGet("/attendance/verification").then(function (rows) {
+          state.amTaps = {};
+          state.pmTaps = {};
+          state.proxyFlags = {};
+          rows.forEach(function (r) {
+            if (r.am) state.amTaps[r.roll] = tsToHM(r.am);
+            if (r.pm) state.pmTaps[r.roll] = tsToHM(r.pm);
+            if (r.proxy) {
+              state.proxyFlags[r.roll] = true;
+            }
+          });
+
+          state.tapFeed.forEach(function (t) {
+            if (state.proxyFlags[t.roll]) {
+              t.verified = false;
+              t.proxy_suspected = true;
+            }
+          });
+
+          renderVerifyMatrix();
+          renderTapFeed();
+        }).catch(function () { });
+      }
+
+      function refreshRation() {
+        apiGet("/ration/today").then(function (p) {
+          state.ration.studentCount = p.student_count;
+          state.ration.claimedCount = p.claimed_count;
+          state.ration.notClaimedCount = p.not_claimed_count;
+          state.ration.initialGrain = p.initial_grain_kg;
+          state.ration.initialPulse = p.initial_pulses_kg;
+          state.ration.remainingGrain = p.remaining_grain_kg;
+          state.ration.remainingPulse = p.remaining_pulses_kg;
+          state.ration.missing = p.not_claimed || [];
+          if ($("rationGrainInput") && !$("rationGrainInput").value) $("rationGrainInput").value = Number(p.initial_grain_kg).toFixed(3);
+          if ($("rationPulseInput") && !$("rationPulseInput").value) $("rationPulseInput").value = Number(p.initial_pulses_kg).toFixed(3);
+          renderRation();
+        }).catch(function () { });
+      }
+
+      function refreshFeedback() {
+        apiGet("/feedback/summary").then(function (p) {
+          state.feedback = {
+            active: !!p.active,
+            teacherName: p.teacher_name || "",
+            total: p.total || 0,
+            average: p.average || 0,
+            ratings: p.ratings || { "1": 0, "2": 0, "3": 0, "4": 0 }
+          };
+          renderFeedback();
+        }).catch(function () { });
+      }
+
+      function renderRation() {
+        var r = state.ration;
+        $("rationStudentCount").textContent = r.studentCount;
+        $("rationClaimedCount").textContent = r.claimedCount;
+        $("rationNotClaimedCount").textContent = r.notClaimedCount;
+        $("rationInitialGrain").textContent = Number(r.initialGrain).toFixed(3) + " kg";
+        $("rationRemainingGrain").textContent = Number(r.remainingGrain).toFixed(3) + " kg";
+        $("rationInitialPulse").textContent = Number(r.initialPulse).toFixed(3) + " kg";
+        $("rationRemainingPulse").textContent = Number(r.remainingPulse).toFixed(3) + " kg";
+
+        var body = $("rationMissingBody");
+        if (!r.missing.length) {
+          body.innerHTML = '<tr><td colspan="3" class="empty">Every student has collected a ration.</td></tr>';
+        } else {
+          body.innerHTML = r.missing.map(function (s) {
+            return '<tr><td>' + escapeHtml(s.roll) + '</td><td>' + escapeHtml(s.name) + '</td><td>' + escapeHtml(s["class"] || "") + '</td></tr>';
+          }).join("");
+        }
+      }
+
+      function renderFeedback() {
+        var f = state.feedback;
+        $("feedbackTeacher").textContent = f.teacherName || "—";
+        $("feedbackTotal").textContent = f.total;
+        $("feedbackAverage").textContent = f.total ? f.average.toFixed(2) + " / 4" : "—";
+        [1, 2, 3, 4].forEach(function (k) {
+          var count = f.ratings[String(k)] || 0;
+          var pct = f.total ? Math.round(100 * count / f.total) : 0;
+          var row = document.querySelector("#feedbackBars .bar-row:nth-child(" + k + ")");
+          row.querySelector(".bar-fill").style.width = pct + "%";
+          $("feedbackPct" + k).textContent = pct + "%";
+        });
+      }
+
+      $("rationStockForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (!state.backendLive) { toast("Not connected", "Connect to the backend to update stock", true); return; }
+        apiSend("/ration/stock", "POST", {
+          initial_grain_kg: Number($("rationGrainInput").value),
+          initial_pulses_kg: Number($("rationPulseInput").value)
+        }).then(function (p) {
+          refreshRation();
+          toast("Ration stock saved", Number(p.remaining_grain_kg).toFixed(3) + " kg grain remaining");
+        }).catch(function (err) { toast("Stock update failed", String(err.message || err), true); });
+      });
+
+      function refreshSms() {
+        apiGet("/sms/status").then(function (s) {
+          state.smsQueued = s.households_pending;
+          $("smsQueued").textContent = state.smsQueued;
+        }).catch(function () { });
+        apiGet("/sms/log?limit=15").then(function (rows) { renderSmsLog(rows); }).catch(function () { });
+      }
+      function renderSmsLog(rows) {
+        var el = $("smsLogBody");
+        if (!rows || !rows.length) { el.innerHTML = '<tr><td colspan="4" class="empty">No messages sent yet.</td></tr>'; return; }
+        el.innerHTML = rows.map(function (r) {
+          var badge = r.status === "sent" ? "ok" : (r.status === "dry_run" ? "muted" : "bad");
+          return '<tr><td>' + tsToHM(r.ts) + '</td><td>' + escapeHtml(r.phone) + '</td>'
+            + '<td style="max-width:360px;">' + escapeHtml(r.message) + '</td>'
+            + '<td><span class="badge ' + badge + '">' + escapeHtml(r.status) + '</span></td></tr>';
+        }).join("");
+      }
+
+      function startBackendRefresh() {
+        if (state.refreshTimer) return;
+
+        state.refreshTimer = setInterval(function () {
+          refreshAttendance();
+          refreshRation();
+          refreshFeedback();
+          refreshSms();
+        }, 5000);
+      }
+      function stopBackendRefresh() {
+        if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
+      }
+
+      /* ===================== Clock ===================== */
+      function tickClock() {
+        var d = new Date();
+        $("clock").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+        $("dateLabel").textContent = d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+        updateSmsCountdown(d);
+      }
+      setInterval(tickClock, 1000);
+      tickClock();
+
+      /* ===================== Nav / sidebar ===================== */
+      var navItems = document.querySelectorAll(".nav-item");
+      navItems.forEach(function (item) {
+        item.addEventListener("click", function () {
+          navItems.forEach(function (i) { i.classList.remove("active"); });
+          item.classList.add("active");
+          closeSidebar();
+        });
+      });
+      function openSidebar() { $("sidebar").classList.add("open"); }
+      function closeSidebar() { $("sidebar").classList.remove("open"); }
+      $("hamburgerBtn").addEventListener("click", function () {
+        $("sidebar").classList.toggle("open");
+      });
+
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            navItems.forEach(function (i) { i.classList.remove("active"); });
+            var match = document.querySelector('.nav-item[data-target="' + e.target.id + '"]');
+            if (match) match.classList.add("active");
+          }
+        });
+      }, { rootMargin: "-40% 0px -50% 0px" });
+      document.querySelectorAll(".module").forEach(function (m) { io.observe(m); });
+
+      /* ===================== Toasts ===================== */
+      function toast(title, msg, bad) {
+        var el = document.createElement("div");
+        el.className = "toast" + (bad ? " bad" : "");
+        el.innerHTML = '<span class="toast-dot"></span><div><b>' + escapeHtml(title) + '</b>' + escapeHtml(msg) + '</div>';
+        $("toastStack").appendChild(el);
+        setTimeout(function () { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(function () { el.remove(); }, 300); }, 3500);
+      }
+
+      /* ===================== Settings panel ===================== */
+      $("settingsBtn").addEventListener("click", function () { $("settingsPanel").classList.add("open"); });
+      $("closeSettingsBtn").addEventListener("click", function () { $("settingsPanel").classList.remove("open"); });
+      $("settingsPanel").addEventListener("click", function (e) { if (e.target === $("settingsPanel")) $("settingsPanel").classList.remove("open"); });
+
+      $("demoToggle").addEventListener("change", function (e) {
+        state.demoMode = e.target.checked;
+        if (state.demoMode) { startDemo(); setModePill(true); }
+        else { stopDemo(); setModePill(false); }
+      });
+
+      function setModePill(demo) {
+        var p = $("modePill");
+        p.style.display = demo ? "inline-flex" : "none";
+      }
+
+      /* ===================== Raw WebSocket ===================== */
+      function connectWs() {
+        var url = $("wsUrlInput").value.trim();
+        if (!url) return;
+        state.apiBase = $("apiUrlInput").value.trim().replace(/\/$/, "");
+        state.adminKey = $("adminKeyInput").value.trim();
+        try {
+          if (state.ws) state.ws.close();
+          // When the backend is public, reuse the admin key as the dashboard
+          // WebSocket token. Local development remains unchanged when the key is blank.
+          if (state.adminKey) {
+            url += (url.indexOf("?") >= 0 ? "&" : "?") + "token=" + encodeURIComponent(state.adminKey);
+          }
+          state.ws = new WebSocket(url);
+          state.ws.onopen = function () {
+            setWsPill(true);
+            toast("Terminal connected", url);
+            $("demoToggle").checked = false;
+            state.demoMode = false;
+            stopDemo();
+            setModePill(false);
+            state.backendLive = true;
+            loadAllFromBackend();
+            startBackendRefresh();
+          };
+          state.ws.onclose = function () {
+            setWsPill(false);
+            toast("Terminal disconnected", "Reconnect from Connection panel", true);
+          };
+          state.ws.onerror = function () {
+            setWsPill(false);
+          };
+          state.ws.onmessage = function (evt) {
+            try {
+              var msg = JSON.parse(evt.data);
+              handleMessage(msg);
+            } catch (err) { /* ignore malformed frame */ }
+          };
+        } catch (err) {
+          toast("Connection failed", String(err), true);
+        }
+      }
+      function disconnectWs() {
+        if (state.ws) { state.ws.close(); state.ws = null; }
+        setWsPill(false);
+        state.backendLive = false;
+        stopBackendRefresh();
+      }
+      function setWsPill(online) {
+        var p = $("wsPill");
+        p.className = "pill " + (online ? "ok" : "off");
+        p.innerHTML = '<span class="dot"></span> ' + (online ? "Terminal online" : "Terminal offline");
+      }
+      $("connectBtn").addEventListener("click", connectWs);
+      $("disconnectBtn").addEventListener("click", disconnectWs);
+
+      /* central dispatcher — a real backend just needs to send these shapes */
+      function handleMessage(msg) {
+        switch (msg.type) {
+          case "tap_event": onTapEvent(msg.data); break;
+          case "proxy_event":
+
+            if (msg.data.action === "flag") {
+
+              state.proxyFlags[msg.data.roll] = true;
+
+              state.tapFeed.forEach(function (t) {
+                if (t.roll === msg.data.roll) {
+                  t.verified = false;
+                  t.proxy_suspected = true;
+                }
+              });
+
+              renderTapFeed();
+              renderVerifyMatrix();
+            }
+
+            break;
+          case "feedback_update": state.feedback = Object.assign(state.feedback, {
+            active: !!msg.data.active,
+            teacherName: msg.data.teacher_name || state.feedback.teacherName,
+            total: msg.data.total || 0,
+            average: msg.data.average || 0,
+            ratings: msg.data.ratings || { "1": 0, "2": 0, "3": 0, "4": 0 }
+          }); renderFeedback(); break;
+          case "ration_update": refreshRation(); break;
+          case "mode_event":
+            state.terminalMode = { mode: msg.data.mode || "idle", teacherName: msg.data.teacher_name || "" };
+            renderModeStatus();
+            break;
+          case "hardware_status": onHardwareStatus(msg.data); break;
+          case "risk_alert": onRiskAlert(msg.data); break;
+          default: break;
+        }
+      }
+
+      function renderModeStatus() {
+        var m = state.terminalMode || { mode: "idle", teacherName: "" };
+        var labels = {
+          idle: "Terminal idle",
+          select: "Teacher authenticated · choose 1, 2 or 3",
+          attendance: "Attendance mode",
+          feedback: "Feedback mode",
+          ration: "Ration mode"
+        };
+        var pill = $("modeStatusPill");
+        pill.innerHTML = '<span class="dot"></span> ' + escapeHtml(labels[m.mode] || m.mode);
+        if (m.teacherName) pill.title = "Teacher: " + m.teacherName;
+      }
+
+      /* ===================== 1. Attendance ===================== */
+      function onTapEvent(d) {
+
+        var unknown =
+          d.verified === false &&
+          !d.proxy_suspected &&
+          !d.proxy_cleared &&
+          (d.session === "SCAN" || d.name === "Unrecognised card");
+
+        // ------------------------------------------------------------
+        // A previously proxy-flagged student scanned their OWN card.
+        // Clear their proxy state. The physical scan itself is still added
+        // to the live feed below as an "ALREADY MARKED" event.
+        // ------------------------------------------------------------
+        if (d.proxy_cleared) {
+
+          delete state.proxyFlags[d.roll];
+
+          state.tapFeed.forEach(function (t) {
+            if (
+              t.roll === d.roll &&
+              t.session === d.session
+            ) {
+              t.verified = true;
+              t.proxy_suspected = false;
+            }
+          });
+
+          renderVerifyMatrix();
+        }
+
+        // ------------------------------------------------------------
+        // Duplicate attendance.
+        // The attendance row is not duplicated in the database, but the
+        // physical scan is still a real live-feed event. Add it below with
+        // an explicit "ALREADY MARKED" badge.
+        // ------------------------------------------------------------
+        var alreadyMarked = !!d.already_marked;
+
+        if (alreadyMarked) {
+          toast(
+            d.proxy_cleared ? "Proxy cleared" : "Already marked",
+            d.proxy_cleared
+              ? d.name + " verified themselves"
+              : d.name + " is already marked for " + d.session
+          );
+        }
+
+        // ------------------------------------------------------------
+        // A new proxy pair has just been detected.
+        // ------------------------------------------------------------
+        if (d.proxy_suspected) {
+
+          state.proxyFlags[d.roll] = true;
+
+          if (d.proxy_partner_roll) {
+            state.proxyFlags[d.proxy_partner_roll] = true;
+          }
+
+          // Change the previously displayed partner row too.
+          state.tapFeed.forEach(function (t) {
+
+            if (
+              t.roll === d.roll ||
+              t.roll === d.proxy_partner_roll
+            ) {
+              t.verified = false;
+              t.proxy_suspected = true;
+            }
+
+          });
+        }
+
+        // ------------------------------------------------------------
+        // Add the new tap to the live feed.
+        // ------------------------------------------------------------
+        state.tapFeed.unshift({
+          name: d.name || (unknown ? "Unrecognised card" : "Unknown"),
+          roll: d.roll || "Unknown",
+          uid: d.uid || "",
+          session: d.session || (unknown ? "SCAN" : "AM"),
+          verified: d.verified !== false,
+          already_marked: alreadyMarked,
+          proxy_suspected: !!d.proxy_suspected,
+          time: tsToHM(d.ts) || nowHM()
+        });
+
+        state.tapFeed = state.tapFeed.slice(0, 40);
+
+        renderTapFeed();
+
+        // ------------------------------------------------------------
+        // Unknown card
+        // ------------------------------------------------------------
+        if (unknown) {
+
+          toast(
+            "Unrecognised card",
+            "UID: " + (d.uid || "not available"),
+            true
+          );
+
+          return;
+        }
+
+        // ------------------------------------------------------------
+        // Normal / proxy attendance
+        // ------------------------------------------------------------
+        if (d.session === "AM") {
+          state.amTaps[d.roll] = nowHM();
+        }
+
+        if (d.session === "PM") {
+          state.pmTaps[d.roll] = nowHM();
+        }
+
+        renderVerifyMatrix();
+
+        if (d.proxy_suspected) {
+
+          toast(
+            "Proxy suspected",
+            d.name +
+            " and " +
+            (d.proxy_partner_name || ("#" + d.proxy_partner_roll)) +
+            " scanned too close together",
+            true
+          );
+
+        } else if (!alreadyMarked) {
+
+          toast(
+            d.name,
+            "Tapped in · " +
+            (d.session === "AM" ? "Morning" : "Afternoon") +
+            " · #" +
+            d.roll
+          );
+        }
+      } function renderTapFeed() {
+        var el = $("tapFeed");
+        if (!state.tapFeed.length) { el.innerHTML = '<div class="empty">Waiting for the first tap…</div>'; return; }
+        el.innerHTML = state.tapFeed.map(function (t) {
+          var uidLine = t.uid ? '<div class="roll">Card UID: ' + escapeHtml(t.uid) + '</div>' : '';
+          var badgeClass;
+
+          if (t.proxy_suspected) {
+            badgeClass = "bad";
+          } else if (t.already_marked) {
+            badgeClass = "warn";
+          } else if (t.verified) {
+            badgeClass = t.session === "AM" ? "ok" : "warn";
+          } else {
+            badgeClass = "bad";
+          }
+
+          var badgeText;
+
+          if (t.proxy_suspected) {
+            badgeText = "PROXY";
+          } else if (t.already_marked) {
+            badgeText = "ALREADY MARKED";
+          } else if (t.verified) {
+            badgeText = t.session;
+          } else {
+            badgeText = "UNKNOWN";
+          }
+          return '<div class="feed-row">'
+            + '<span class="feed-time">' + t.time + '</span>'
+            + '<span class="avatar">' + initials(t.name || "?") + '</span>'
+            + '<div class="feed-meta"><div>' + escapeHtml(t.name) + '</div><div class="roll">Roll #' + escapeHtml(t.roll) + '</div>' + uidLine + '</div>'
+            + '<span class="badge ' + badgeClass + '">' + badgeText + '</span>'
+            + '</div>';
+        }).join("");
+      }
+
+      function renderVerifyMatrix() {
+
+        var el = $("verifyBody");
+
+        el.innerHTML = state.students.map(function (s) {
+
+          var am = state.amTaps[s.roll];
+          var pm = state.pmTaps[s.roll];
+
+          var proxy = !!state.proxyFlags[s.roll];
+
+          var status;
+
+          if (proxy) {
+
+            status =
+              '<span class="badge bad">Proxy suspected</span>';
+
+          }
+          else if (am && pm) {
+
+            status =
+              '<span class="badge ok">Matched</span>';
+
+          }
+          else if (am && !pm) {
+
+            status =
+              '<span class="badge muted">Pending PM</span>';
+
+          }
+          else if (!am && pm) {
+
+            status =
+              '<span class="badge bad">Proxy suspected</span>';
+
+          }
+          else {
+
+            status =
+              '<span class="badge muted">No taps</span>';
+          }
+
+          return '<tr>'
+            + '<td class="name-cell">'
+            + '<span class="avatar">'
+            + initials(s.name)
+            + '</span>'
+            + escapeHtml(s.name)
+            + '</td>'
+            + '<td>' + (am || "—") + '</td>'
+            + '<td>' + (pm || "—") + '</td>'
+            + '<td>' + status + '</td>'
+            + '</tr>';
+
+        }).join("");
+      }
+
+      /* ===================== 3. Dropout / equity ===================== */
+      function onRiskAlert(d) {
+        state.riskList.unshift(d);
+        state.riskList = state.riskList.slice(0, 20);
+        renderRisk();
+        toast("Risk flag: " + d.name, d.pattern, true);
+      }
+      function renderRisk() {
+        $("riskBody").innerHTML = state.riskList.map(function (r) {
+          var badge = r.risk === "high" ? "bad" : (r.risk === "med" ? "warn" : "muted");
+          return '<tr><td>' + escapeHtml(r.name) + '</td><td>' + escapeHtml(r.pattern) + '</td><td>' + r.missed + '</td>'
+            + '<td><span class="badge ' + badge + '">' + r.risk.toUpperCase() + '</span></td></tr>';
+        }).join("");
+      }
+      function renderInterventionFeed() {
+        var el = $("interventionFeed");
+        if (!state.interventions.length) { el.innerHTML = '<div class="empty">No outreach logged yet.</div>'; return; }
+        el.innerHTML = state.interventions.map(function (i) {
+          return '<div class="feed-row"><span class="feed-time">' + i.time + '</span>'
+            + '<div class="feed-meta"><div>' + escapeHtml(i.student) + '</div><div class="roll">' + escapeHtml(i.note) + '</div></div></div>';
+        }).join("");
+      }
+      function populateInterventionSelect() {
+        $("intStudent").innerHTML = state.students.map(function (s) {
+          return '<option value="' + escapeHtml(s.roll) + '">' + escapeHtml(s.name) + ' (Roll #' + escapeHtml(s.roll) + ')</option>';
+        }).join("");
+      }
+      $("logInterventionBtn").addEventListener("click", function () {
+        var roll = $("intStudent").value;
+        var note = $("intNote").value.trim();
+        if (!roll || !note) return;
+        var s = state.students.filter(function (st) { return st.roll === roll; })[0];
+        var studentName = s ? s.name : roll;
+        if (state.backendLive) {
+          apiSend("/dropout/interventions", "POST", { roll: roll, student: studentName, note: note })
+            .then(function () {
+              $("intNote").value = "";
+              apiGet("/dropout/interventions").then(function (rows) {
+                state.interventions = rows.map(function (r) { return { student: r.student, note: r.note, time: tsToHM(r.ts) }; });
+                renderInterventionFeed();
+              });
+              toast("Intervention logged", studentName);
+            }).catch(function (err) { toast("Log failed", String(err.message || err), true); });
+        } else {
+          state.interventions.unshift({ student: studentName, note: note, time: nowHM() });
+          $("intNote").value = "";
+          renderInterventionFeed();
+          toast("Intervention logged", studentName + " (local demo only — connect to save)");
+        }
+      });
+      $("runScanBtn").addEventListener("click", function () {
+        if (!state.backendLive) { toast("Not connected", "Connect to the backend first", true); return; }
+        apiSend("/dropout/scan", "POST").then(function (res) {
+          var n = (res.new_flags || []).length;
+          toast("Dropout scan complete", n ? n + " new flag(s) raised" : "No new flags");
+          apiGet("/dropout/flags").then(function (rows) { state.riskList = rows; renderRisk(); });
+        }).catch(function (err) { toast("Scan failed", String(err.message || err), true); });
+      });
+
+      /* ===================== 5. Sync & SMS ===================== */
+      function onHardwareStatus(d) {
+        state.hardware = d;
+        renderHardware();
+      }
+      function renderHardware() {
+        var h = state.hardware;
+        var bars = $("signalBars");
+        var level = h.rssi > -55 ? 4 : h.rssi > -67 ? 3 : h.rssi > -78 ? 2 : 1;
+        bars.className = "signal-bars s" + level;
+        $("signalLabel").textContent = h.online ? "Online" : "Offline — buffering";
+        $("signalRssi").textContent = "RSSI: " + h.rssi + " dBm";
+        $("queueCount").textContent = h.queue;
+      }
+      function updateSmsCountdown(now) {
+        var target = new Date(now);
+        target.setHours(19, 30, 0, 0);
+        if (target <= now) target.setDate(target.getDate() + 1);
+        var diff = target - now;
+        var hrs = Math.floor(diff / 3600000);
+        var mins = Math.floor((diff % 3600000) / 60000);
+        $("smsCountdown").textContent = hrs + "h " + mins + "m";
+        $("smsQueued").textContent = state.smsQueued;
+      }
+      $("sendBatchBtn").addEventListener("click", function () {
+        if (!state.backendLive) { toast("Not connected", "Connect to the backend first", true); return; }
+        apiSend("/sms/trigger-batch", "POST").then(function (res) {
+          toast("SMS batch sent", (res.sent || 0) + " sent · " + (res.dry_run || 0) + " dry-run · " + (res.failed || 0) + " failed");
+          refreshSms();
+        }).catch(function (err) { toast("Batch failed", String(err.message || err), true); });
+      });
+
+      /* ===================== Admin / roster ===================== */
+      function renderRoster() {
+        $("rosterBody").innerHTML = state.students.map(function (s) {
+          return '<tr><td>' + escapeHtml(s.roll) + '</td><td>' + escapeHtml(s.name) + '</td><td>' + escapeHtml(s.cls) + '</td>'
+            + '<td style="font-family:var(--font-mono);">' + escapeHtml(s.uid) + '</td>'
+            + '<td><span class="badge ' + (s.role === "teacher" ? "warn" : "muted") + '">' + escapeHtml(s.role || "student") + '</span></td>'
+            + '<td>' + escapeHtml(s.phone || "—") + '</td>'
+            + '<td><button class="btn ghost small" data-remove="' + escapeHtml(s.roll) + '">Remove</button></td></tr>';
+        }).join("");
+        $("rosterCount").textContent = state.students.length;
+        $("rosterSearchStatus").textContent = window.rosterSearchActive
+          ? "Showing database search results."
+          : "Showing the PostgreSQL roster.";
+        populateInterventionSelect();
+      }
+
+      var rosterSearchTimer = null;
+      var rosterSearchSeq = 0;
+      function searchRosterFromDatabase(query) {
+        var trimmed = String(query || "").trim();
+        var seq = ++rosterSearchSeq;
+        if (!trimmed) {
+          window.rosterSearchActive = false;
+          apiGet("/roster").then(function (rows) {
+            if (seq !== rosterSearchSeq) return;
+            state.students = rows.map(function (r) {
+              return { roll: r.roll, name: r.name, cls: r["class"], uid: r.rfid_uid, phone: r.guardian_phone, role: r.role || "student" };
+            });
+            renderRoster();
+          }).catch(function (err) {
+            toast("Roster search failed", String(err.message || err), true);
+          });
+          return;
+        }
+
+        window.rosterSearchActive = true;
+        apiGet("/roster/search?q=" + encodeURIComponent(trimmed) + "&limit=100")
+          .then(function (rows) {
+            if (seq !== rosterSearchSeq) return;
+            state.students = rows.map(function (r) {
+              return { roll: r.roll, name: r.name, cls: r["class"], uid: r.rfid_uid, phone: r.guardian_phone, role: r.role || "student" };
+            });
+            renderRoster();
+            $("rosterSearchStatus").textContent = "Found " + rows.length + " matching student" + (rows.length === 1 ? "" : "s") + " in PostgreSQL.";
+          })
+          .catch(function (err) {
+            toast("Database search failed", String(err.message || err), true);
+          });
+      }
+
+      $("rosterSearch").addEventListener("input", function () {
+        var value = this.value;
+        clearTimeout(rosterSearchTimer);
+        rosterSearchTimer = setTimeout(function () { searchRosterFromDatabase(value); }, 250);
+      });
+      $("rosterSearchClear").addEventListener("click", function () {
+        $("rosterSearch").value = "";
+        clearTimeout(rosterSearchTimer);
+        searchRosterFromDatabase("");
+      });
+
+      $("rosterBody").addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-remove]");
+        if (!btn) return;
+        var roll = btn.getAttribute("data-remove");
+        if (state.backendLive) {
+          apiSend("/roster/" + encodeURIComponent(roll), "DELETE").then(function () {
+            state.students = state.students.filter(function (s) { return s.roll !== roll; });
+            renderRoster(); renderVerifyMatrix();
+            toast("Student removed", "Roll #" + roll);
+          }).catch(function (err) { toast("Remove failed", String(err.message || err), true); });
+        } else {
+          state.students = state.students.filter(function (s) { return s.roll !== roll; });
+          renderRoster();
+          renderVerifyMatrix();
+        }
+      });
+
+      $("rosterForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var student = {
+          name: $("fName").value.trim(), roll: $("fRoll").value.trim(), cls: $("fClass").value.trim(),
+          uid: $("fUid").value.trim().toUpperCase(), phone: $("fPhone").value.trim(), role: $("fRole").value
+        };
+        if (state.backendLive) {
+          apiSend("/roster", "POST", { roll: student.roll, name: student.name, cls: student.cls, rfid_uid: student.uid, guardian_phone: student.phone, role: student.role })
+            .then(function () {
+              e.target.reset();
+              loadAllFromBackend();
+              toast("Student added", "Synced to backend roster");
+            }).catch(function (err) { toast("Add failed", String(err.message || err), true); });
+        } else {
+          toast("Backend unavailable", "Connect to PostgreSQL before changing the roster", true);
+        }
+      });
+
+      /* ===================== Demo mode (no backend yet) ===================== */
+      var demoStep = 0;
+
+      function startDemo() {
+        if (state.demoTimer) return;
+        demoStep = 0;
+        state.demoTimer = setInterval(demoTick, 1800);
+      }
+      function stopDemo() {
+        if (state.demoTimer) { clearInterval(state.demoTimer); state.demoTimer = null; }
+      }
+      function demoTick() {
+        demoStep++;
+
+        if (demoStep % 2 === 0) {
+          var s = state.students.filter(function (x) { return x.role !== "teacher"; })[Math.floor(Math.random() * Math.max(1, state.students.length))];
+          if (s) {
+            var hour = new Date().getSeconds() % 2 === 0 ? "AM" : "PM";
+            onTapEvent({ name: s.name, roll: s.roll, session: hour, verified: true });
+          }
+        }
+
+        if (demoStep % 3 === 0) {
+          state.ration.studentCount = state.students.filter(function (x) { return x.role !== "teacher"; }).length;
+          state.ration.claimedCount = Math.min(state.ration.studentCount, state.ration.claimedCount + 1);
+          state.ration.notClaimedCount = Math.max(0, state.ration.studentCount - state.ration.claimedCount);
+          state.ration.initialGrain = Math.max(state.ration.initialGrain, state.ration.studentCount * 0.1);
+          state.ration.initialPulse = Math.max(state.ration.initialPulse, state.ration.studentCount * 0.02);
+          state.ration.remainingGrain = Math.max(0, state.ration.initialGrain - state.ration.claimedCount * 0.1);
+          state.ration.remainingPulse = Math.max(0, state.ration.initialPulse - state.ration.claimedCount * 0.02);
+          renderRation();
+        }
+
+        if (demoStep % 4 === 0) {
+          var rating = 1 + Math.floor(Math.random() * 4);
+          state.feedback.total++;
+          state.feedback.ratings[String(rating)] = (state.feedback.ratings[String(rating)] || 0) + 1;
+          state.feedback.average = (
+            state.feedback.average * (state.feedback.total - 1) + rating
+          ) / state.feedback.total;
+          state.feedback.active = true;
+          state.feedback.teacherName = "Demo Teacher";
+          renderFeedback();
+          state.terminalMode = { mode: "feedback", teacherName: "Demo Teacher" };
+          renderModeStatus();
+        }
+
+        onHardwareStatus({
+          rssi: -50 - Math.floor(Math.random() * 30),
+          online: Math.random() > 0.08,
+          queue: Math.random() > 0.85 ? Math.floor(Math.random() * 5) : 0
+        });
+        state.smsQueued = Object.keys(state.amTaps).length;
+      }
+
+      /* ===================== Init ===================== */
+      (function setConnectionDefaults() {
+        // Same-origin default when the backend is serving this file itself
+        // (http(s)://host:port/), otherwise fall back to the standard local
+        // dev address from the README.
+        var sameOrigin = /^https?:$/.test(location.protocol);
+        var httpBase = sameOrigin ? location.origin : "http://localhost:8000";
+        var wsProto = location.protocol === "https:" ? "wss:" : "ws:";
+        var wsBase = sameOrigin ? (wsProto + "//" + location.host) : "ws://localhost:8000";
+        $("apiUrlInput").value = httpBase;
+        $("wsUrlInput").value = wsBase + "/ws/dashboard";
+      })();
+
+      renderRoster();
+      renderVerifyMatrix();
+      renderRisk();
+      renderInterventionFeed();
+      renderRation();
+      renderFeedback();
+      renderModeStatus();
+      renderHardware();
+      setWsPill(false);
+      setModePill(false);
+      stopDemo();
+      connectWs();
+
+    })();
+  </script>
+</body>
+
+</html>

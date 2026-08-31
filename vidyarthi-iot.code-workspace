@@ -1,0 +1,21 @@
+{
+  "folders": [
+    { "name": "Vidyarthi-IoT Root", "path": "." },
+    { "name": "Backend", "path": "backend" },
+    { "name": "Firmware (PlatformIO)", "path": "firmware/RFID_Attendance" },
+    { "name": "Frontend", "path": "frontend" }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:Backend}\\.venv\\Scripts\\python.exe",
+    "python.terminal.activateEnvironment": true,
+    "platformio-ide.autoRebuildAutocompleteIndex": true,
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
+  },
+  "extensions": {
+    "recommendations": [
+      "platformio.platformio-ide",
+      "ms-python.python",
+      "ms-python.vscode-pylance"
+    ]
+  }
+}

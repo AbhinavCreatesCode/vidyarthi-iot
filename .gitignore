@@ -1,0 +1,39 @@
+# Secrets / local environment
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+**/__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local/runtime data
+*.db
+*.sqlite
+*.sqlite3
+**/data/*.csv.migrated
+
+# PlatformIO
+**/.pio/
+**/.pioenvs/
+**/.piolibdeps/
+**/.clangd/
+
+# Firmware secrets
+**/src/secrets.h
+
+# VS Code / IDE local files
+.vscode/launch.json.user
+.vscode/*.user
+.idea/
+
+# Node (frontend is currently static HTML; ignore if tooling is added later)
+node_modules/
+frontend/dist/
+frontend/build/

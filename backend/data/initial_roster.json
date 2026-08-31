@@ -1,0 +1,9 @@
+[
+  {"roll":"16","name":"Vista Jamar","class":"1-A","rfid_uid":"91:CF:69:05","guardian_phone":"8525991791","role":"student"},
+  {"roll":"22","name":"Avik Raj","class":"1-B","rfid_uid":"BB:80:6E:05","guardian_phone":"8853391938","role":"student"},
+  {"roll":"1","name":"Teacher","class":"1-A","rfid_uid":"7B:E6:90:04","guardian_phone":"7494991791","role":"teacher"},
+  {"roll":"11","name":"Utsav Anand Sharma","class":"1-C","rfid_uid":"DA:B4:D1:62","guardian_phone":"81920717145","role":"student"},
+  {"roll":"21","name":"Abhinav Gupta","class":"1-C","rfid_uid":"B3:4F:BE:F5","guardian_phone":"8525991791","role":"student"},
+  {"roll":"40","name":"Avik Raj","class":"7-B","rfid_uid":"53:FA:55:FC","guardian_phone":"8887777444","role":"student"},
+  {"roll":"29","name":"Srujan Dallas","class":"1-D","rfid_uid":"F1:7A:AB:04","guardian_phone":"1234456789","role":"student"}
+]
