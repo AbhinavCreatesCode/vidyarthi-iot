@@ -20,7 +20,7 @@ The project was designed to move important school workflows from disconnected/ma
 
 The important design decision is that the **backend is authoritative**. The ESP32 is an interface device: it reads cards, detects button presses, displays status, and sends events. It does not decide whether a teacher is valid, whether attendance should be written, whether a ration claim is allowed, or how much stock remains.
 
----
+--
 
 ## 2. Why this project was made
 
